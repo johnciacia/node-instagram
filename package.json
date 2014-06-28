@@ -6,7 +6,8 @@
 		"type": "git",
 		"url": "git://github.com/johnciacua/node-instagram.git"
 	},
+	"main": "./lib/instagram.js",
 	"dependencies": {
-		"requests": "0.0.1"
+		"http": "*"
 	}
 }
