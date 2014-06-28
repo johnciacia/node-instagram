@@ -1,0 +1,12 @@
+{
+	"name": "node-instagram",
+	"description": "Node.js Instagram Client",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/johnciacua/node-instagram.git"
+	},
+	"dependencies": {
+		"requests": "0.0.1"
+	}
+}
