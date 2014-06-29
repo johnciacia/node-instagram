@@ -1,7 +1,6 @@
 var instagram = function(key, uuid) {
 
     var Q = require('q'),
-        responseBody = '',
         cookies = [];
 
     if(!key || !uuid) {
@@ -37,6 +36,7 @@ var instagram = function(key, uuid) {
             }
         };
 
+        console.log(options.path);
         req = transport.request(options, function(res) {
             var responseBody = '';
             res.setEncoding('utf8');
@@ -47,7 +47,6 @@ var instagram = function(key, uuid) {
             });
 
             res.on('end', function() {
-                console.log(responseBody);
                 deferred.resolve(responseBody);
             });
         });
@@ -86,10 +85,10 @@ var instagram = function(key, uuid) {
     return {
         login: function(username, password) {
             return request('post', 'accounts/login/', {
-                username: username,
-                password: password,
-                guid: uuid,
-                device_id: 'android-' + uuid
+              username: username,
+              password: password,
+              guid: uuid,
+              device_id: 'android-' + uuid
             });
         },
 
@@ -99,15 +98,12 @@ var instagram = function(key, uuid) {
 
         popular: function() {
             return request('get', 'feed/popular/');
-        } 
+        },
+
+        follow: function(user_id) {
+          return request('post', 'friendships/create/' + user_id + '/', {
+            user_id: user_id
+          });
+        }
     }
 }
-
-var key = '',
-    uuid = '',
-    ig = instagram(key, uuid);
-
-ig.login('', '').then(function() {
-    ig.popular();
-});
-
