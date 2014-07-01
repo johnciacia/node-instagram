@@ -36,12 +36,14 @@ var instagram = function(key, uuid) {
             }
         };
 
-        console.log(options.path);
         req = transport.request(options, function(res) {
             var responseBody = '';
             res.setEncoding('utf8');
-            cookies = res.headers['set-cookie'];
-            
+
+            if (cookies.length === 0) {
+              cookies = res.headers['set-cookie'];
+            }
+
             res.on('data', function(chunk) {
                 responseBody += chunk;
             });
