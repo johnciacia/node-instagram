@@ -106,6 +106,17 @@ var instagram = function(key, uuid) {
           return request('post', 'friendships/create/' + user_id + '/', {
             user_id: user_id
           });
+        },
+
+        configure: function(media_id, caption) {
+           return request('post', 'media/configure/', {
+                'geotag_enabled': false,
+                'caption': caption,
+                'device_timestamp': Math.round(+new Date()/1000),
+                'source_type': 4,
+                'filter_type': 0,
+                'media_id': media_id
+          });
         }
     }
 }
