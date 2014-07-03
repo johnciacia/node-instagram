@@ -1,6 +1,7 @@
 var instagram = function(key, uuid) {
 
     var Q = require('q'),
+        request = require('request'),
         cookies = [];
 
     if(!key || !uuid) {
@@ -13,53 +14,36 @@ var instagram = function(key, uuid) {
     /**
      *
      */
-    var request = function(method, resource, data, signed) {
+    var foo = function(method, resource, data, signed) {
         var signed = typeof signed === 'undefined' || signed,
-            transport = signed ? require('https') : require('http'),
+            protocol = signed ? 'https' : 'http',
             port = signed ? 443 : 80,
             options, 
             req,
             deferred = Q.defer();
 
         options = {
-            hostname: 'instagram.com',
-            port: port,
-            path: '/api/v1/' + resource,
+            url: protocol + '://instagram.com/api/v1/' + resource,
             method: method,
             headers: {
                 'Accept': '*/*',
                 'User-Agent': 'Instagram 4.0.2 Android (10/3.2.2; 240dpi; 600x1024; samsung; SGH-I896; SGH-I896; smdkc210; en_GB)',
                 'Accept-Language': 'en-us,en;q=0.5',
                 'Accept-Charset': 'ISO-8859-1,utf-8',
-                'Connection': 'keep-alive',
-                'Cookie': cookies.join(', ')
-            }
+                'Connection': 'keep-alive'
+            },
+            body: 'get' === method.toLowerCase() || getSignedRequest(data)
         };
 
-        req = transport.request(options, function(res) {
-            var responseBody = '';
-            res.setEncoding('utf8');
-
-            if (cookies.length === 0) {
-              cookies = res.headers['set-cookie'];
+        req = request(options, function(error, response, body) {
+            console.log(response.statusCode);
+            if (!error && response.statusCode == 200) {
+                var info = JSON.parse(body);
+                console.log(info);
             }
-
-            res.on('data', function(chunk) {
-                responseBody += chunk;
-            });
-
-            res.on('end', function() {
-                deferred.resolve(responseBody);
-            });
         });
 
-        'get' === method.toLowerCase() || req.write(getSignedRequest(data));
-        req.end();
-
-        req.on('error', function(e) {
-            deferred.reject(e.message)
-        });
-
+        
         return deferred.promise
     };
 
@@ -86,7 +70,7 @@ var instagram = function(key, uuid) {
 
     return {
         login: function(username, password) {
-            return request('post', 'accounts/login/', {
+            return foo('post', 'accounts/login/', {
               username: username,
               password: password,
               guid: uuid,
@@ -95,21 +79,21 @@ var instagram = function(key, uuid) {
         },
 
         suggested: function() {
-            return request('get', 'friendships/suggested/');
+            return foo('get', 'friendships/suggested/');
         },
 
         popular: function() {
-            return request('get', 'feed/popular/');
+            return foo('get', 'feed/popular/');
         },
 
         follow: function(user_id) {
-          return request('post', 'friendships/create/' + user_id + '/', {
+          return foo('post', 'friendships/create/' + user_id + '/', {
             user_id: user_id
           });
         },
 
         configure: function(media_id, caption) {
-           return request('post', 'media/configure/', {
+           return foo('post', 'media/configure/', {
                 'geotag_enabled': false,
                 'caption': caption,
                 'device_timestamp': Math.round(+new Date()/1000),
