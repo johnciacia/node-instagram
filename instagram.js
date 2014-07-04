@@ -1,8 +1,7 @@
 var instagram = function(key, uuid) {
 
     var Q = require('q'),
-        request = require('request'),
-        cookies = [];
+        request = require('request');
 
     if(!key || !uuid) {
         throw {
@@ -14,16 +13,21 @@ var instagram = function(key, uuid) {
     /**
      *
      */
-    var foo = function(method, resource, data, signed) {
+    var getURL = function(resource, signed) {
+        var protocol = signed ? 'https' : 'http';
+        return protocol + '://instagram.com/api/v1/' + resource
+    };
+
+    /**
+     *
+     */
+    var send = function(method, resource, data, signed) {
         var signed = typeof signed === 'undefined' || signed,
-            protocol = signed ? 'https' : 'http',
-            port = signed ? 443 : 80,
             options, 
-            req,
             deferred = Q.defer();
 
         options = {
-            url: protocol + '://instagram.com/api/v1/' + resource,
+            url: getURL(resource, signed),
             method: method,
             headers: {
                 'Accept': '*/*',
@@ -32,14 +36,17 @@ var instagram = function(key, uuid) {
                 'Accept-Charset': 'ISO-8859-1,utf-8',
                 'Connection': 'keep-alive'
             },
-            body: 'get' === method.toLowerCase() || getSignedRequest(data)
+            jar: true
         };
 
-        req = request(options, function(error, response, body) {
-            console.log(response.statusCode);
+        'get' === method.toLowerCase() || options.body = getSignedRequest(data)
+
+
+        request(options, function(error, response, body) {
             if (!error && response.statusCode == 200) {
-                var info = JSON.parse(body);
-                console.log(info);
+                deferred.resolve(body);
+            } else {
+                deferred.reject(body);
             }
         });
 
@@ -70,7 +77,7 @@ var instagram = function(key, uuid) {
 
     return {
         login: function(username, password) {
-            return foo('post', 'accounts/login/', {
+            return send('post', 'accounts/login/', {
               username: username,
               password: password,
               guid: uuid,
@@ -79,21 +86,21 @@ var instagram = function(key, uuid) {
         },
 
         suggested: function() {
-            return foo('get', 'friendships/suggested/');
+            return send('get', 'friendships/suggested/');
         },
 
         popular: function() {
-            return foo('get', 'feed/popular/');
+            return send('get', 'feed/popular/');
         },
 
         follow: function(user_id) {
-          return foo('post', 'friendships/create/' + user_id + '/', {
+          return send('post', 'friendships/create/' + user_id + '/', {
             user_id: user_id
           });
         },
 
         configure: function(media_id, caption) {
-           return foo('post', 'media/configure/', {
+           return send('post', 'media/configure/', {
                 'geotag_enabled': false,
                 'caption': caption,
                 'device_timestamp': Math.round(+new Date()/1000),
