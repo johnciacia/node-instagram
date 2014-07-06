@@ -99,6 +99,10 @@ var instagram = function(key, uuid) {
           });
         },
 
+        timeline: function() {
+            return send('get', 'feed/timeline/');
+        },
+
         configure: function(media_id, caption) {
            return send('post', 'media/configure/', {
                 'geotag_enabled': false,
