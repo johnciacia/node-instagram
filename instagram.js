@@ -100,7 +100,11 @@ var instagram = function(key, uuid) {
         },
 
         timeline: function() {
-            return send('get', 'feed/timeline/');
+            
+        },
+
+        user_timeline: function(user_id) {
+            return send('get', 'feed/user/' + user_id);
         },
 
         configure: function(media_id, caption) {
