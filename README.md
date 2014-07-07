@@ -1,11 +1,5 @@
-```
-var uuid = require('uuid').v4(),
-    key = '------------------------------',
-    ig = instagram(key, uuid);
+node-instagram
+==============
+This client is for educational purposes only. The key needed to sign the requests has been purposely omitted.
 
-ig.login('username', 'password').then(function() {
-    ig.popular().then(function(response) {
-      console.log(response);
-    });
-});
-```
+Much of the functionality provided by this client violates Instagram's [Terms](http://instagram.com/about/legal/terms/api/). No warrantee nor support is offered for this client. Use at your own risk.
