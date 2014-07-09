@@ -1,7 +1,8 @@
 var instagram = function(key, uuid) {
 
     var Q = require('q'),
-        request = require('request');
+        request = require('request'),
+        fs = require('fs');
 
     if(!key || !uuid) {
         throw {
@@ -22,6 +23,7 @@ var instagram = function(key, uuid) {
      *
      */
     var send = function(method, resource, data, signed) {
+        console.log("SEND");
         var signed = typeof signed === 'undefined' || signed,
             options, 
             deferred = Q.defer();
@@ -39,16 +41,24 @@ var instagram = function(key, uuid) {
             jar: true
         };
 
-        'get' === method.toLowerCase() || options.body = getSignedRequest(data)
+        if('get' !== method.toLowerCase()) {
+          options.body = getSignedRequest(data)  
+        } 
 
 
-        request(options, function(error, response, body) {
+        var r = request(options, function(error, response, body) {
             if (!error && response.statusCode == 200) {
                 deferred.resolve(body);
             } else {
                 deferred.reject(body);
             }
         });
+
+        if(resource == 'media/upload/') {
+            var form = r.form();
+            form.append('device_timestamp', data.device_timestamp);
+            form.append('photo', fs.createReadStream(data.photo));
+        }
 
         
         return deferred.promise
@@ -78,10 +88,10 @@ var instagram = function(key, uuid) {
     return {
         login: function(username, password) {
             return send('post', 'accounts/login/', {
-              username: username,
-              password: password,
-              guid: uuid,
-              device_id: 'android-' + uuid
+                username: username,
+                password: password,
+                guid: uuid,
+                device_id: 'android-' + uuid
             });
         },
 
@@ -94,9 +104,9 @@ var instagram = function(key, uuid) {
         },
 
         follow: function(user_id) {
-          return send('post', 'friendships/create/' + user_id + '/', {
-            user_id: user_id
-          });
+            return send('post', 'friendships/create/' + user_id + '/', {
+                user_id: user_id
+            });
         },
 
         timeline: function() {
@@ -107,15 +117,23 @@ var instagram = function(key, uuid) {
             return send('get', 'feed/user/' + user_id);
         },
 
+        upload: function(photo) {
+            return send('post', 'media/upload/', {
+                'device_timestamp': Math.round(+new Date()/1000),
+                'lat': '40.771019',
+                'lng': '-73.955841',
+                'photo': photo
+            }, false)
+        },
+
         configure: function(media_id, caption) {
            return send('post', 'media/configure/', {
-                'geotag_enabled': false,
                 'caption': caption,
                 'device_timestamp': Math.round(+new Date()/1000),
                 'source_type': 4,
                 'filter_type': 0,
                 'media_id': media_id
-          });
+            });
         }
     }
 }
