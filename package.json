@@ -9,6 +9,6 @@
 	"main": "./lib/instagram.js",
 	"dependencies": {
 		"uuid": "1.4.1",
-		"request": "2.36.0"
+		"request": "2.37.0"
 	}
 }
